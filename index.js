@@ -4,7 +4,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const cors = require('cors');
 const path = require('path');
 
 const app = express();
@@ -87,6 +86,30 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
 
+  // Serve login page
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  });
+  
+  // Serve register page
+  app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'register.html'));
+  });
+  
+  // Serve tenant dashboard
+  app.get('/tenant-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'tenant-dashboard.html'));
+  });
+  
+  // Serve admin dashboard
+  app.get('/admin-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html'));
+  });
+  
+  // Serve profile management page
+  app.get('/profile-management', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'profile-management.html'));
+  });
 
 // Register Tenant
 app.post('/api/register', async (req, res) => {
