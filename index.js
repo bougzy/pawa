@@ -66,16 +66,33 @@ const Rent = mongoose.model('Rent', rentSchema);
 const Tenant = mongoose.model('Tenant', tenantSchema);
 
 // Middleware for user authentication
-const authMiddleware = (req, res, next) => {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).send('Access denied');
+// const authMiddleware = (req, res, next) => {
+//   const token = req.headers['authorization'];
+//   if (!token) return res.status(401).send('Access denied');
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(401).send('Invalid token');
-    req.user = user;
-    next();
-  });
-};
+  
+
+//   jwt.verify(token, JWT_SECRET, (err, user) => {
+//     if (err) return res.status(401).send('Invalid token');
+//     req.user = user;
+//     next();
+//   });
+// };
+
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).send('Access denied');
+  
+    const token = authHeader.split(' ')[1];
+    if (!token) return res.status(401).send('Access denied');
+  
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+      if (err) return res.status(401).send('Invalid token');
+      req.user = user;
+      next();
+    });
+  };
+  
 
 // Hardcoded admin credentials
 const adminEmail = 'admin@apartment.com';
@@ -315,6 +332,56 @@ app.get('/api/admin/apartments', authMiddleware, async (req, res) => {
   res.json(apartments);
 });
 
+
+// Admin Views All Tenants
+app.get('/api/admin/tenants', authMiddleware, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Access denied');
+    const tenants = await User.find({ role: 'tenant' });
+    res.json(tenants);
+  });
+
+  // Get all users for the admin dashboard
+app.get('/api/admin/tenants', authMiddleware, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Access denied');
+  
+    try {
+      const users = await User.find();
+      res.json(users);
+    } catch (err) {
+      res.status(500).send('Server error');
+    }
+  });
+  
+  
+  // Admin Views All Rent Payments
+  app.get('/api/admin/rent-payments', authMiddleware, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Access denied');
+    const { status } = req.query; // Optional query parameter to filter by status
+    const filter = status ? { status } : {};
+    const rentPayments = await Rent.find(filter).populate('tenantId apartmentId');
+    res.json(rentPayments);
+  });
+  
+  // Admin Views Maintenance Requests
+  app.get('/api/admin/maintenance-requests', authMiddleware, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Access denied');
+    const tenants = await User.find({ role: 'tenant' });
+    res.json(tenants);
+  });
+  
+
+  // Get list of all users
+app.get('/api/admin/users', authMiddleware, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).send('Access denied');
+  
+    try {
+      const users = await User.find();
+      res.json(users);
+    } catch (error) {
+      res.status(500).send('Error fetching users');
+    }
+  });
+  
 
 
 
